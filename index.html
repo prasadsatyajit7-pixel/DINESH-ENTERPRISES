@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>DINESH ENTERPRISES</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #f1f5f9;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 20px;
+      margin-top: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    .stock-item {
+      background: #e2e8f0;
+      padding: 15px;
+      border-radius: 15px;
+      margin-top: 10px;
+    }
+
+    .delete-btn {
+      background: red;
+      margin-top: 10px;
+    }
+
+    .search-box {
+      margin-top: 20px;
+    }
+  </style>
+.dark {
+  background: #0f172a;
+  color: white;
+}
+
+.dark .card {
+  background: #1e293b;
+  color: white;
+}
+</head>
+
+<body>
+<button onclick="toggleDarkMode()" style="margin-bottom:10px;">
+  Toggle Dark Mode
+</button>
+  <h1>DINESH ENTERPRISES</h1>
+<div class="card">
+
+  <h2>Dashboard</h2>
+
+  <p id="totalStock">
+    Total Stock: 0
+  </p>
+
+  <p id="totalSales">
+    Total Sales: 0
+  </p>
+<p id="outOfStock">
+  Out Of Stock: 0
+</p>
+<p id="monthlySales">
+  Monthly Sales: ₹0
+</p>
+
+<p id="invoiceCount">
+  Total Invoices: 0
+</p>
+</div>
+  <p>Mobile Shop Management System</p>
+
+  <div class="card">
+
+    <h2>Add Mobile Stock</h2>
+
+    <input type="text" id="brand" placeholder="Brand Name">
+
+    <input type="text" id="model" placeholder="Model Name">
+
+    <input type="text" id="imei" placeholder="IMEI Number">
+
+    <button onclick="addStock()">Add Stock</button>
+
+  </div>
+
+  <div class="card">
+
+    <h2>Search IMEI</h2>
+
+    <input
+      type="text"
+      id="search"
+      class="search-box"
+      placeholder="Search IMEI Number"
+      onkeyup="searchStock()"
+    >
+
+  </div>
+
+  <div class="card">
+
+    <h2>Stock List</h2>
+
+    <div id="stockList"></div>
+</div>
+
+<div class="card">
+
+  <h2>Customer Sale Entry</h2>
+
+  <input type="text" id="customerName" placeholder="Customer Name">
+
+  <input type="text" id="customerMobile" placeholder="Customer Mobile">
+
+  <input type="text" id="saleModel" placeholder="Mobile Model">
+
+  <input type="text" id="saleIMEI" placeholder="IMEI Number">
+
+  <select id="paymentType" style="width:100%;padding:12px;margin-top:10px;border-radius:10px;">
+
+    <option>Cash</option>
+    <option>Finance</option>
+
+  </select>
+
+  <input type="text" id="financeCompany" placeholder="Finance Company">
+
+  <button onclick="saveSale()">
+    Save Sale
+  </button>
+
+</div>
+
+<div class="card">
+
+  <h2>Sales Records</h2>
+<button onclick="filterFinance()">
+  Show Finance Sales
+</button>
+  <div id="salesList"></div>
+</div>
+
+<div class="card">
+
+  <h2>GST Invoice Preview</h2>
+
+  <div id="invoiceBox">
+
+    <p>Customer: -</p>
+
+    <p>Mobile: -</p>
+
+    <p>Model: -</p>
+
+    <p>IMEI: -</p>
+
+    <p>Payment: -</p>
+
+    <p>GST (18%): -</p>
+
+    <p><b>Total Amount: -</b></p>
+
+  </div>
+
+</div>
+</div>
+
+  </div>
+
+  <script>
+function toggleDarkMode() {
+  document.body.classList.toggle("dark");
+}
+    let stocks = [];
+
+    function saveData() {
+      localStorage.setItem(
+        "stocks",
+        JSON.stringify(stocks)
+      );
+    }
+
+    function loadData() {
+
+      let data =
+        localStorage.getItem("stocks");
+
+      if (data) {
+        stocks = JSON.parse(data);
+        displayStocks(stocks);
+      }
+    }
+
+    function addStock() {
+
+      let brand =
+        document.getElementById("brand").value;
+
+      let model =
+        document.getElementById("model").value;
+
+      let imei =
+        document.getElementById("imei").value;
+
+      if (brand == "" || model == "" || imei == "") {
+        alert("Please fill all fields");
+        return;
+      }
+
+      let duplicate = stocks.find(
+        item => item.imei == imei
+      );
+
+      if (duplicate) {
+alert("⚠ IMEI already exists in system");
+        return;
+      }
+
+      stocks.push({
+        brand,
+        model,
+        imei
+      });
+
+      saveData();
+
+      displayStocks(stocks);
+
+      document.getElementById("brand").value = "";
+      document.getElementById("model").value = "";
+      document.getElementById("imei").value = "";
+
+    }
+
+    function displayStocks(data) {
+
+      let html = "";
+
+      data.forEach((item, index) => {
+
+        html += `
+          <div class="stock-item">
+
+            <b>${item.brand}</b><br>
+
+            ${item.model}<br>
+
+            IMEI: ${item.imei}<br>
+
+            <button
+              class="delete-btn"
+              onclick="deleteStock(${index})"
+            >
+              Delete
+            </button>
+<button
+  style="background:orange;margin-top:5px;"
+  onclick="editStock(${index})"
+>
+  Edit
+</button>
+          </div>
+        `;
+
+      });
+
+      document.getElementById("stockList").innerHTML = html;
+
+    }
+
+    function deleteStock(index) {
+function editStock(index) {
+
+  let item = stocks[index];
+
+  document.getElementById("brand").value = item.brand;
+  document.getElementById("model").value = item.model;
+  document.getElementById("imei").value = item.imei;
+
+  deleteStock(index);
+}
+      stocks.splice(index, 1);
+
+      saveData();
+
+      displayStocks(stocks);
+updateDashboard();
+
+    }
+
+    function searchStock() {
+
+      let value =
+        document.getElementById("search")
+        .value
+        .toLowerCase();
+
+      let filtered = stocks.filter(item =>
+        item.imei.toLowerCase().includes(value)
+      );
+
+      displayStocks(filtered);
+
+    }
+let sales = [];
+
+function saveSale() {
+
+  let customerName =
+    document.getElementById("customerName").value;
+
+  let customerMobile =
+    document.getElementById("customerMobile").value;
+
+  let saleModel =
+    document.getElementById("saleModel").value;
+
+  let saleIMEI =
+    document.getElementById("saleIMEI").value;
+
+  let paymentType =
+    document.getElementById("paymentType").value;
+
+  let financeCompany =
+    document.getElementById("financeCompany").value;
+
+  if (
+    customerName == "" ||
+    customerMobile == "" ||
+    saleModel == "" ||
+    saleIMEI == ""
+  ) {
+    alert("Please fill all sale fields");
+    return;
+  }
+
+  sales.push({
+generateInvoice({
+  customerName,
+  customerMobile,
+  saleModel,
+  saleIMEI,
+  paymentType
+});
+    customerName,
+    customerMobile,
+    saleModel,
+    saleIMEI,
+    paymentType,
+    financeCompany
+  });
+
+  displaySales();
+function generateInvoice(data) {
+
+  let amount = 50000;
+
+  let gst =
+    amount * 18 / 100;
+
+  let total =
+    amount + gst;
+
+  document.getElementById(
+    "invoiceBox"
+  ).innerHTML = `
+
+    <p>
+      Customer:
+      ${data.customerName}
+    </p>
+
+    <p>
+      Mobile:
+      ${data.customerMobile}
+    </p>
+
+    <p>
+      Model:
+      ${data.saleModel}
+    </p>
+
+    <p>
+      IMEI:
+      ${data.saleIMEI}
+    </p>
+
+    <p>
+      Payment:
+      ${data.paymentType}
+    </p>
+
+    <p>
+      GST (18%):
+      ₹${gst}
+    </p>
+
+    <p>
+      <b>
+        Total Amount:
+        ₹${total}
+      </b>
+    </p>
+
+  `;
+
+}
+updateDashboard();
+function updateDashboard() {
+
+  document.getElementById(
+    "totalStock"
+  ).innerText =
+    "Total Stock: " + stocks.length;
+
+  document.getElementById(
+    "totalSales"
+  ).innerText =
+    "Total Sales: " + sales.length;
+document.getElementById(
+  "monthlySales"
+).innerText =
+  "Monthly Sales: ₹" +
+  (sales.length * 50000);
+
+document.getElementById(
+  "invoiceCount"
+).innerText =
+  "Total Invoices: " +
+  sales.length;
+document.getElementById(
+  "outOfStock"
+).innerText =
+  "Out Of Stock: " +
+  (stocks.length === 0 ? 1 : 0);
+}
+
+  document.getElementById("customerName").value = "";
+  document.getElementById("customerMobile").value = "";
+  document.getElementById("saleModel").value = "";
+  document.getElementById("saleIMEI").value = "";
+  document.getElementById("financeCompany").value = "";
+
+}
+
+function displaySales() {
+
+  let html = "";
+
+  sales.forEach(item => {
+
+    html += `
+      <div class="stock-item">
+
+        <b>${item.customerName}</b><br>
+
+        ${item.customerMobile}<br>
+
+        ${item.saleModel}<br>
+
+        IMEI: ${item.saleIMEI}<br>
+
+        Payment: ${item.paymentType}<br>
+
+        Finance: ${item.financeCompany}
+
+      </div>
+    `;
+
+  });
+
+  document.getElementById("salesList").innerHTML = html;
+
+}
+    loadData();
+updateDashboard();
+function filterFinance() {
+
+  let filtered = sales.filter(
+    s => s.paymentType === "Finance"
+  );
+
+  let html = "";
+
+  filtered.forEach(item => {
+
+    html += `
+      <div class="stock-item">
+        <b>${item.customerName}</b><br>
+        ${item.saleModel}<br>
+        Finance: ${item.financeCompany}
+      </div>
+    `;
+
+  });
+
+  document.getElementById("salesList").innerHTML = html;
+}
+  </script>
+
+</body>
+
+</html>
